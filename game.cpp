@@ -9,20 +9,20 @@ using namespace std;
 //0xFF corresponds to white color
 #define ON_COLOUR 0xFF
 // number of rows
-#define ROW 400
+#define ROW 200
 // number of columns
-#define COL 400
+#define COL 200
 // size of cell in pixel
-#define cell_size 2
+#define cell_size 5
 // Limit loop rate for visibility
 #define LIMIT_RATE 0
 // Tick-rate in milliseconds (if LIMIT_RATE == 1)
 #define TICK_RATE 100
 
 // Created a pointer to the object of type SDL_Window
-SDL_Window *window;
+SDL_Window *window = NULL;
 // Created a pointer to the object of type SDL_Surface
-SDL_Surface *window_surface;
+SDL_Surface *window_surface = NULL;
 // Defined the screen_width
 unsigned int screen_width = COL*cell_size;
 // Defined the screen_height
@@ -45,9 +45,9 @@ class Grid
     uint8_t** cell_new_neighbour;
     
     public :
-    // Cell Constructor declaration for setting the class variables
+    // Constructor declaration for setting the class variables
     Grid(unsigned int height, unsigned int width);
-    // Cell destructor declaration for deleting the object
+    // destructor declaration for deleting the object
     ~Grid();
     // The Grid_Initialize() function is used for Initializing the class variables by giving random input using rand() function
     void Grid_Initialize(); // declaration
@@ -56,7 +56,7 @@ class Grid
     // The Grid_Update_Neighbour() function is used for updating the cell_new_neighbour in case of state transition according to the rules of game
     void Grid_Update_Neighbour(unsigned int status, unsigned int y, unsigned int x); //declaration
     // The fill_color() function is used for setting the pixel color for the new state transition
-    void fill_color(uint8_t cell_color,unsigned int y,unsigned int x); //declaration
+    void fill_color(uint8_t cell_color, unsigned int y, unsigned int x); //declaration
     
 };
 
@@ -113,9 +113,14 @@ int main()
                 case SDL_QUIT:
                     keep_window_open = false;
                     break;
+                
+                case SDL_KEYDOWN:
+                    if (e.key.keysym.sym == SDLK_SPACE)
+                    {
+                        keep_window_open =false;
+                    }
+                    break;
             }
-                
-                
         }
           
         // Calling Grid_New_State() function for change to new state
@@ -129,6 +134,7 @@ int main()
     SDL_Delay(TICK_RATE);
 #endif
     }
+
     // Destroy window
     SDL_DestroyWindow(window);
     // Quit SDL subsystems
@@ -175,6 +181,7 @@ Grid::~Grid()
     delete [] cell_new_neighbour;
     delete [] cell_current_neighbour;
     delete [] cell_current_state;
+    cout<<"Destroyed the Object"<<endl;
 }
 
 void Grid::Grid_Initialize()
@@ -319,15 +326,11 @@ void Grid::fill_color(uint8_t cell_color,unsigned int y,unsigned int x)
     {
         for (unsigned int j = 0; j < cell_size; j++)
         {
-            *(pixel_ptr + j * 4) = cell_color;      // Setting the red color
-            *(pixel_ptr + j * 4 + 1) = cell_color;  // Setting the green color
-            *(pixel_ptr + j * 4 + 2) = cell_color;  // Setting the blue color
+            *(pixel_ptr + j * 4) = cell_color;            // Setting the red color
+            *(pixel_ptr + j * 4 + 1) = cell_color;        // Setting the green color
+            *(pixel_ptr + j * 4 + 2) = cell_color;        // Setting the blue color
+            *(pixel_ptr + j * 4 + 3) = SDL_ALPHA_OPAQUE;  // Setting the alpha value
         }
         pixel_ptr += screen_width * 4;
     }
 }
-
-
-
-
-
