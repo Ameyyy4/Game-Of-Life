@@ -33,30 +33,44 @@ class Grid
 {
     // Kept the class variables as private
     private :
+    
     // rows shows about the height of grid
     unsigned int rows;
+    
     // cols shows about the width of grid
     unsigned int cols;
+    
     // Defined a pointer for 2-D array implementation which indicates dead or live cells LIVE = White  DEAD = Black
     uint8_t** cell_current_state;
+    
     // Defined a pointer for 2-D array implementation which gives a count of neighbours in current state
     uint8_t** cell_current_neighbour;
+    
     // Defined a pointer for 2-D array implementation which gives a count of neighbours in next state
     uint8_t** cell_new_neighbour;
     
     public :
+    
     // Constructor declaration for setting the class variables
     Grid(unsigned int height, unsigned int width);
+    
     // destructor declaration for deleting the object
     ~Grid();
+    
     // The Grid_Initialize() function is used for Initializing the class variables by giving random input using rand() function
     void Grid_Initialize(); // declaration
+    
     // The Grid_New_State() function is used for updating the cell_current_state with new state according to the rules of game
     void Grid_New_State();  // declaration
+    
     // The Grid_Update_Neighbour() function is used for updating the cell_new_neighbour in case of state transition according to the rules of game
     void Grid_Update_Neighbour(unsigned int status, unsigned int y, unsigned int x); //declaration
+    
     // The fill_color() function is used for setting the pixel color for the new state transition
     void fill_color(uint8_t cell_color, unsigned int y, unsigned int x); //declaration
+    
+    // The handle_events() function is used for tracking the mouse and keyboard
+    void handle_events(bool &window_status); //declaration
     
 };
 
@@ -99,44 +113,30 @@ int main()
     Current_Grid.Grid_Initialize();
     
     // Used for slowing down for proper visibility
-#if LIMIT_RATE
-    SDL_Delay(1000);
-#endif
+    #if LIMIT_RATE
+        SDL_Delay(1000);
+    #endif
+    
     while(keep_window_open)
     {
         // SDL Event Handler
-        SDL_Event e;
-        while(SDL_PollEvent(&e) > 0)
-        {
-            switch(e.type)
-            {
-                case SDL_QUIT:
-                    keep_window_open = false;
-                    break;
-                
-                case SDL_KEYDOWN:
-                    if (e.key.keysym.sym == SDLK_SPACE)
-                    {
-                        keep_window_open =false;
-                    }
-                    break;
-            }
-        }
-          
+        Current_Grid.handle_events(keep_window_open);
+        
         // Calling Grid_New_State() function for change to new state
         Current_Grid.Grid_New_State();
         
         // update frame buffer
         SDL_UpdateWindowSurface(window);
 
-// Used for slowing down for proper visibility
-#if LIMIT_RATE
-    SDL_Delay(TICK_RATE);
-#endif
+        // Used for slowing down for proper visibility
+        #if LIMIT_RATE
+            SDL_Delay(TICK_RATE);
+        #endif
     }
 
     // Destroy window
     SDL_DestroyWindow(window);
+    
     // Quit SDL subsystems
     SDL_Quit();
 
@@ -333,4 +333,26 @@ void Grid::fill_color(uint8_t cell_color,unsigned int y,unsigned int x)
         }
         pixel_ptr += screen_width * 4;
     }
+}
+
+void Grid::handle_events(bool &window_status)
+{
+    SDL_Event e;
+    while(SDL_PollEvent(&e) > 0)
+    {
+        switch(e.type)
+        {
+            case SDL_QUIT:
+                window_status = false;
+                break;
+            
+            case SDL_KEYDOWN:
+                if (e.key.keysym.sym == SDLK_SPACE)
+                {
+                    window_status =false;
+                }
+                break;
+        }
+    }
+
 }
