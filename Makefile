@@ -1,2 +1,2 @@
 game:
-	g++ game.cpp -o play -I include -L lib -l SDL2-2.0.0
+	g++ game-optimised.cpp -o play -I include -L lib -l SDL2-2.0.0

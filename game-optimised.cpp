@@ -40,13 +40,9 @@ class Grid
     // cols shows about the width of grid
     unsigned int cols;
     
-    // Defined a pointer for 2-D array implementation which indicates dead or live cells LIVE = White  DEAD = Black
-    uint8_t** cell_current_state;
-    
-    // Defined a pointer for 2-D array implementation which gives a count of neighbours in current state
-    uint8_t** cell_current_neighbour;
-    
-    // Defined a pointer for 2-D array implementation which gives a count of neighbours in next state
+    // Defined a pointer for 2-D array implementation which indicates dead or live cells LIVE = White  DEAD = Black & gives a count of neighbours in next state
+    unsigned char** cell_current;
+
     uint8_t** cell_new_neighbour;
     
     public :
@@ -60,7 +56,7 @@ class Grid
     // The Grid_Initialize() function is used for Initializing the class variables by giving random input using rand() function
     void Grid_Initialize(); // declaration
     
-    // The Grid_New_State() function is used for updating the cell_current_state with new state according to the rules of game
+    // The Grid_New_State() function is used for updating the cell_current with new state according to the rules of game
     void Grid_New_State();  // declaration
     
     // The Grid_Update_Neighbour() function is used for updating the cell_new_neighbour in case of state transition according to the rules of game
@@ -153,13 +149,11 @@ Grid::Grid(unsigned int height, unsigned int width)
     cols = width;
     
     // Assigning memory to class variables on heap
-    cell_current_state = new uint8_t*[rows];
-    cell_current_neighbour = new uint8_t*[rows];
+    cell_current = new unsigned char*[rows];
     cell_new_neighbour  = new uint8_t*[rows];
     for (unsigned int i=0; i<rows; i++)
     {
-        cell_current_state[i] = new uint8_t[cols];
-        cell_current_neighbour[i] = new uint8_t[cols];
+        cell_current[i] = new unsigned char[cols];
         cell_new_neighbour[i]  = new uint8_t[cols];
     }
     
@@ -168,8 +162,7 @@ Grid::Grid(unsigned int height, unsigned int width)
     {
         for(unsigned int j=0; j<cols; j++)
         {
-            cell_current_state[i][j] = 0;
-            cell_current_neighbour[i][j] = 0;
+            cell_current[i][j] = (unsigned char) 0;
             cell_new_neighbour[i][j] = 0;
         }
     }
@@ -178,9 +171,8 @@ Grid::Grid(unsigned int height, unsigned int width)
 Grid::~Grid()
 {
     // Releasing the memory used by class variables
+    delete [] cell_current;
     delete [] cell_new_neighbour;
-    delete [] cell_current_neighbour;
-    delete [] cell_current_state;
     
     cout<<"Destroyed the Object"<<endl;
 }
@@ -194,93 +186,93 @@ void Grid::Grid_Initialize()
         {
             if(rand()%2 == 1)
             {
-                cell_current_state[i][j] = 1;
+                cell_current[i][j] |= 0x01;  // set LSB to 1
                 Grid_Update_Neighbour(1,i,j);
             }
         }
     }
 
-    // Setting the cell_current_neighbour values equal to cell_new_neighbour
+    // Setting the cell_current values equal to cell_new_neighbour
     for (unsigned int i=0; i<ROW; i++)
     {
         for (unsigned int j=0; j<COL; j++)
         {
-            cell_current_neighbour[i][j] = cell_new_neighbour[i][j];
+            cell_new_neighbour[i][j] = cell_current[i][j]>>1 ;      // The bit value in cell_current is updated to new neighbour count
         }
     }
  }
 
 void Grid::Grid_Update_Neighbour(unsigned int status, unsigned int y, unsigned int x)
 {
-    //updating cell_new_neighbour according to the position of cell where transition occurred
+    //updating cell_current according to the position of cell where transition occurred
     if(status == 1)
     {
         if(y!=0)
         {
-            cell_new_neighbour[y-1][x]++;
+            cell_current[y-1][x]+=0x02;
         }
         if(x!=0)
         {
-            cell_new_neighbour[y][x-1]++;
+            cell_current[y][x-1]+=0x02;
         }
         if(y!=ROW-1)
         {
-            cell_new_neighbour[y+1][x]++;
+            cell_current[y+1][x]+=0x02;
         }
         if(x!=COL-1)
         {
-            cell_new_neighbour[y][x+1]++;
+            cell_current[y][x+1]+=0x02;
         }
         if(x>0 && y>0)
         {
-            cell_new_neighbour[y-1][x-1]++;
+            cell_current[y-1][x-1]+=0x02;
         }
         if(x<COL-1 && y>0)
         {
-            cell_new_neighbour[y-1][x+1]++;
+            cell_current[y-1][x+1]+=0x02;
         }
         if(x>0 && y<ROW-1)
         {
-            cell_new_neighbour[y+1][x-1]++;
+            cell_current[y+1][x-1]+=0x02;
         }
         if(x<COL-1 && y<ROW-1)
         {
-            cell_new_neighbour[y+1][x+1]++;
+            cell_current[y+1][x+1]+=0x02;
         }
     }
     if(status == 0)
     {
         if(y!=0)
         {
-            cell_new_neighbour[y-1][x]--;
+            cell_current[y-1][x]-=0x02;
         }
         if(x!=0)
         {
-            cell_new_neighbour[y][x-1]--;
+            cell_current[y][x-1]-=0x02;
         }
         if(y!=ROW-1)
         {
-            cell_new_neighbour[y+1][x]--;
+            cell_current[y+1][x]-=0x02;
         }
         if(x!=COL-1)
         {
-            cell_new_neighbour[y][x+1]--;
+            cell_current[y][x+1]-=0x02;
         }
         if(x>0 && y>0)
         {
-            cell_new_neighbour[y-1][x-1]--;
+            cell_current[y-1][x-1]-=0x02;
         }
         if(x<COL-1 && y>0)
         {
-            cell_new_neighbour[y-1][x+1]--;
+            cell_current[y-1][x+1]-=0x02;
         }
         if(x>0 && y<ROW-1)
         {
-            cell_new_neighbour[y+1][x-1]--;
+            cell_current[y+1][x-1]-=0x02;
         }
         if(x<COL-1 && y<ROW-1)
         {
-            cell_new_neighbour[y+1][x+1]--;
+            cell_current[y+1][x+1]-=0x02;
         }
     }
 }
@@ -291,27 +283,27 @@ void Grid::Grid_New_State()
     {
         for (unsigned int j=0; j<COL; j++)
         {
-            if(cell_current_state[i][j] == 0 && cell_current_neighbour[i][j] == 3)
+            if((cell_current[i][j] & 0x01) == 0 && cell_new_neighbour[i][j] == 3)  // used the bitwise operator
             {
-                cell_current_state[i][j] = 1;
+                cell_current[i][j] |= 0x01;                             // set the first bit to one
                 Grid_Update_Neighbour(1,i,j); // Need a temporary to calculate properly
                 fill_color(ON_COLOUR, i, j);
             }
-            if(cell_current_state[i][j] == 1 && (cell_current_neighbour[i][j]>3 || cell_current_neighbour[i][j]<2))
+            if((cell_current[i][j] & 0x01) == 1 && (cell_new_neighbour[i][j]>3 || cell_new_neighbour[i][j]<2)) // used the bitwise operator
             {
-                cell_current_state[i][j] = 0;
+                cell_current[i][j] &= ~0x01;                            // set the first bit to zero
                 Grid_Update_Neighbour(0,i,j);
                 fill_color(OFF_COLOUR, i, j);
             }
         }
     }
     
-    // Setting the cell_current_neighbour values equal to cell_new_neighbour
+    // Setting the cell_current values equal to cell_new_neighbour
     for (unsigned int i=0; i<ROW; i++)
     {
         for (unsigned int j=0; j<COL; j++)
         {
-            cell_current_neighbour[i][j] = cell_new_neighbour[i][j];
+            cell_new_neighbour[i][j] = cell_current[i][j]>>1 ; // The bit value in cell_current is updated to new neighbour count
         }
     }
     
